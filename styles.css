@@ -475,3 +475,14 @@ footer {
     font-size: 0.9rem;
     color: #666;
 }
+
+.layer-container div {
+    padding: 0.5rem;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.layer-container div.active-layer {
+    background-color: #f0f7ff;
+    border-left: 3px solid #007bff;
+}

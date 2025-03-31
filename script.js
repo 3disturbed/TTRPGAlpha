@@ -659,5 +659,41 @@ function exportMap() {
     link.click();
 }
 
+// Tool functionality
+let activeTool = 'draw';
+let activeLayer = 'baseMap';
+
+function setActiveTool(tool) {
+    activeTool = tool;
+    // Update UI to show active tool
+    document.querySelectorAll('.tool').forEach(btn => {
+        if (btn.id === `${tool}Btn`) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
 // Initialize when DOM is loaded
 window.addEventListener('DOMContentLoaded', init);
+
+function updateActiveLayer() {
+    const selectedLayer = document.querySelector('input[name="layer"]:checked')?.value || 'baseMap';
+    activeLayer = selectedLayer;
+    
+    // Update any visual indicators or UI elements
+    document.querySelectorAll('input[name="layer"]').forEach(radio => {
+        const layerLabel = radio.parentElement;
+        if (layerLabel) {
+            if (radio.value === activeLayer) {
+                layerLabel.classList.add('active-layer');
+            } else {
+                layerLabel.classList.remove('active-layer');
+            }
+        }
+    });
+    
+    // Re-render with the active layer
+    render();
+}
