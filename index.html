@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTRPG Grid Combat & Map Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>TTRPG Grid Combat & Map Manager</h1>
+        <nav>
+            <button id="modeToggleBtn" class="nav-btn mode-toggle">Play Mode</button>
+            <button id="saveBtn" class="nav-btn">Save</button>
+            <button id="loadBtn" class="nav-btn">Load</button>
+            <button id="exportBtn" class="nav-btn">Export</button>
+        </nav>
+    </header>
+    
+    <div class="content-container">
+        <!-- Left sidebar - Tools and Layers -->
+        <div class="sidebar left-sidebar editor-panel">
+            <div class="panel">
+                <h3>Drawing Tools</h3>
+                <div class="tool-container">
+                    <button id="drawBtn" class="tool active">Draw</button>
+                    <button id="eraseBtn" class="tool">Erase</button>
+                    <button id="tokenBtn" class="tool">Token</button>
+                    <button id="fogBtn" class="tool">Fog</button>
+                </div>
+                
+                <h3>Terrain Type</h3>
+                <select id="terrainType">
+                    <option value="wall">Wall</option>
+                    <option value="water">Water</option>
+                    <option value="difficult">Difficult Terrain</option>
+                    <option value="normal">Normal</option>
+                </select>
+                
+                <h3>Layers</h3>
+                <div class="layer-container">
+                    <div>
+                        <input type="radio" id="baseMapLayer" name="layer" value="baseMap" checked>
+                        <label for="baseMapLayer">Base Map</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="objectLayer" name="layer" value="object">
+                        <label for="objectLayer">Objects</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="tokenLayer" name="layer" value="token">
+                        <label for="tokenLayer">Tokens</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="effectLayer" name="layer" value="effect">
+                        <label for="effectLayer">Effects</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="fogLayer" name="layer" value="fog">
+                        <label for="fogLayer">Fog of War</label>
+                    </div>
+                </div>
+                
+                <h3>Grid Settings</h3>
+                <div class="grid-settings">
+                    <label for="gridSize">Grid Size:</label>
+                    <input type="range" id="gridSize" min="10" max="100" value="50">
+                    <span id="gridSizeValue">50px</span>
+                    
+                    <label for="gridColor">Grid Color:</label>
+                    <input type="color" id="gridColor" value="#cccccc">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Play mode left sidebar -->
+        <div class="sidebar left-sidebar play-panel" style="display: none;">
+            <div class="panel">
+                <h3>Play Controls</h3>
+                <div class="play-controls">
+                    <button id="viewCharacterBtn" class="play-btn">View Character Sheet</button>
+                    <button id="rollDiceBtn" class="play-btn">Roll Dice</button>
+                </div>
+                
+                <div class="dice-container">
+                    <h4>Quick Dice</h4>
+                    <div class="dice-buttons">
+                        <button class="dice-btn" data-dice="d4">D4</button>
+                        <button class="dice-btn" data-dice="d6">D6</button>
+                        <button class="dice-btn" data-dice="d8">D8</button>
+                        <button class="dice-btn" data-dice="d10">D10</button>
+                        <button class="dice-btn" data-dice="d12">D12</button>
+                        <button class="dice-btn" data-dice="d20">D20</button>
+                        <button class="dice-btn" data-dice="d100">D100</button>
+                    </div>
+                </div>
+                
+                <div class="custom-roll-container">
+                    <h4>Custom Roll</h4>
+                    <div class="form-group">
+                        <input type="text" id="customRollInput" placeholder="e.g. 2d6+3">
+                        <button id="customRollBtn">Roll</button>
+                    </div>
+                </div>
+                
+                <div class="dice-results">
+                    <h4>Roll Results</h4>
+                    <div id="diceLog"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main canvas area -->
+        <div class="canvas-container">
+            <canvas id="mapCanvas"></canvas>
+        </div>
+        
+        <!-- Right sidebar - Token Manager and Combat Tracker -->
+        <div class="sidebar right-sidebar">
+            <div class="panel">
+                <h3>Token Manager</h3>
+                <form id="tokenForm">
+                    <div class="form-group">
+                        <label for="tokenName">Name:</label>
+                        <input type="text" id="tokenName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tokenType">Type:</label>
+                        <select id="tokenType">
+                            <option value="player">Player</option>
+                            <option value="enemy">Enemy</option>
+                            <option value="npc">NPC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tokenHP">HP:</label>
+                        <input type="number" id="tokenHP" min="1" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="tokenAC">AC:</label>
+                        <input type="number" id="tokenAC" min="0" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="tokenInitiative">Initiative:</label>
+                        <input type="number" id="tokenInitiative" value="0">
+                    </div>
+                    <button type="submit">Add Token</button>
+                </form>
+                
+                <div class="token-list-container">
+                    <h4>Available Tokens</h4>
+                    <select id="tokenSelect" size="5">
+                        <!-- Token options will be populated dynamically -->
+                    </select>
+                    <div class="token-actions">
+                        <button id="duplicateTokenBtn">Duplicate Token</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>Combat Tracker</h3>
+                <div class="combat-controls">
+                    <button id="startCombatBtn">Start Combat</button>
+                    <button id="nextTurnBtn">Next Turn</button>
+                </div>
+                <div class="initiative-container">
+                    <h4>Initiative Order</h4>
+                    <ul id="initiativeList">
+                        <!-- Initiative order will be populated dynamically -->
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>Fog of War</h3>
+                <div class="fog-controls">
+                    <button id="revealAllBtn">Reveal All</button>
+                    <button id="hideAllBtn">Hide All</button>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="autoReveal">
+                    <label for="autoReveal">Auto Reveal with Token Movement</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Character Sheet Dialog -->
+    <div id="characterSheetDialog" class="dialog-overlay" style="display: none;">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>Character Sheet</h2>
+                <button id="closeCharacterSheet" class="close-btn">&times;</button>
+            </div>
+            <div class="dialog-content">
+                <form id="characterForm">
+                    <div class="character-header">
+                        <div class="form-group">
+                            <label for="charName">Name:</label>
+                            <input type="text" id="charName" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="charType">Type:</label>
+                            <input type="text" id="charType" disabled>
+                        </div>
+                    </div>
+                    
+                    <div class="char-section">
+                        <h3>Combat Stats</h3>
+                        <div class="stats-grid">
+                            <div class="form-group">
+                                <label for="charHP">HP:</label>
+                                <div class="hp-controls">
+                                    <button type="button" class="stat-btn" data-action="decrease">-</button>
+                                    <input type="number" id="charHP" class="stat-input">
+                                    <button type="button" class="stat-btn" data-action="increase">+</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="charAC">AC:</label>
+                                <input type="number" id="charAC" class="stat-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="charInitiative">Initiative:</label>
+                                <div class="initiative-controls">
+                                    <input type="number" id="charInitiative" class="stat-input">
+                                    <button type="button" id="rollInitiativeBtn" class="roll-btn">Roll</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="char-section">
+                        <h3>Attributes</h3>
+                        <div class="attributes-grid">
+                            <div class="attribute-group">
+                                <label>STR</label>
+                                <input type="number" id="charSTR" class="attr-input">
+                                <span class="attr-mod" id="strMod">+0</span>
+                                <button type="button" class="roll-attr-btn" data-attr="STR">Roll</button>
+                            </div>
+                            <div class="attribute-group">
+                                <label>DEX</label>
+                                <input type="number" id="charDEX" class="attr-input">
+                                <span class="attr-mod" id="dexMod">+0</span>
+                                <button type="button" class="roll-attr-btn" data-attr="DEX">Roll</button>
+                            </div>
+                            <div class="attribute-group">
+                                <label>CON</label>
+                                <input type="number" id="charCON" class="attr-input">
+                                <span class="attr-mod" id="conMod">+0</span>
+                                <button type="button" class="roll-attr-btn" data-attr="CON">Roll</button>
+                            </div>
+                            <div class="attribute-group">
+                                <label>INT</label>
+                                <input type="number" id="charINT" class="attr-input">
+                                <span class="attr-mod" id="intMod">+0</span>
+                                <button type="button" class="roll-attr-btn" data-attr="INT">Roll</button>
+                            </div>
+                            <div class="attribute-group">
+                                <label>WIS</label>
+                                <input type="number" id="charWIS" class="attr-input">
+                                <span class="attr-mod" id="wisMod">+0</span>
+                                <button type="button" class="roll-attr-btn" data-attr="WIS">Roll</button>
+                            </div>
+                            <div class="attribute-group">
+                                <label>CHA</label>
+                                <input type="number" id="charCHA" class="attr-input">
+                                <span class="attr-mod" id="chaMod">+0</span>
+                                <button type="button" class="roll-attr-btn" data-attr="CHA">Roll</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="char-section">
+                        <h3>Notes</h3>
+                        <textarea id="charNotes" rows="5"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="saveCharacterBtn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dice Roll Dialog -->
+    <div id="diceRollDialog" class="dialog-overlay" style="display: none;">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>Dice Roller</h2>
+                <button id="closeDiceRoll" class="close-btn">&times;</button>
+            </div>
+            <div class="dialog-content">
+                <div class="dice-selection">
+                    <div class="dice-grid">
+                        <button class="dice-btn-lg" data-dice="d4">D4</button>
+                        <button class="dice-btn-lg" data-dice="d6">D6</button>
+                        <button class="dice-btn-lg" data-dice="d8">D8</button>
+                        <button class="dice-btn-lg" data-dice="d10">D10</button>
+                        <button class="dice-btn-lg" data-dice="d12">D12</button>
+                        <button class="dice-btn-lg" data-dice="d20">D20</button>
+                        <button class="dice-btn-lg" data-dice="d100">D100</button>
+                    </div>
+                    
+                    <div class="dice-options">
+                        <div class="form-group">
+                            <label for="diceCount">Number of dice:</label>
+                            <input type="number" id="diceCount" min="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="diceModifier">Modifier:</label>
+                            <input type="number" id="diceModifier" value="0">
+                        </div>
+                        <button id="rollSelectedDice" class="roll-btn-lg">Roll Dice</button>
+                    </div>
+                </div>
+                
+                <div class="dice-results-dialog">
+                    <h3>Results</h3>
+                    <div id="diceResultsDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 TTRPG Grid Combat & Map Manager</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
