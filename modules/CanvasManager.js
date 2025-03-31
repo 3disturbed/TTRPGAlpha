@@ -5,9 +5,14 @@ export default class CanvasManager {
         this.mapData = mapData;
     }
 
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth - 500; // Account for both sidebars
-        this.canvas.height = window.innerHeight - 100; // Account for header/footer
+    resizeCanvas(width, height) {
+        if (width && height) {
+            this.canvas.width = width;
+            this.canvas.height = height;
+        } else {
+            this.canvas.width = window.innerWidth - 500; // Account for both sidebars
+            this.canvas.height = window.innerHeight - 100; // Account for header/footer
+        }
         this.drawGrid();
     }
 

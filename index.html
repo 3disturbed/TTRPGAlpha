@@ -10,12 +10,38 @@
     <header>
         <h1>TTRPG Grid Combat & Map Manager</h1>
         <nav>
+            <button id="newMapBtn" class="nav-btn">New Map</button>
             <button id="modeToggleBtn" class="nav-btn mode-toggle">Play Mode</button>
             <button id="saveBtn" class="nav-btn">Save</button>
             <button id="loadBtn" class="nav-btn">Load</button>
             <button id="exportBtn" class="nav-btn">Export</button>
         </nav>
     </header>
+    
+    <!-- New Map Dialog -->
+    <div id="newMapDialog" class="dialog-overlay" style="display: none;">
+        <div class="dialog">
+            <div class="dialog-header">
+                <h2>New Map</h2>
+                <button id="closeNewMap" class="close-btn">&times;</button>
+            </div>
+            <div class="dialog-content">
+                <form id="newMapForm">
+                    <div class="form-group">
+                        <label for="mapWidth">Width (pixels):</label>
+                        <input type="number" id="mapWidth" min="500" value="1000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mapHeight">Height (pixels):</label>
+                        <input type="number" id="mapHeight" min="500" value="800" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Create Map</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     
     <div class="content-container">
         <!-- Left sidebar - Tools and Layers -->
@@ -329,6 +355,6 @@
     <footer>
         <p>&copy; 2025 TTRPG Grid Combat & Map Manager</p>
     </footer>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
