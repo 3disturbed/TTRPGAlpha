@@ -40,9 +40,11 @@ export default class CanvasManager {
 
     getGridPosition(clientX, clientY) {
         const rect = this.canvas.getBoundingClientRect();
+        const x = clientX - rect.left + window.scrollX;
+        const y = clientY - rect.top + window.scrollY;
         return {
-            x: Math.floor((clientX - rect.left) / this.mapData.grid.size) * this.mapData.grid.size,
-            y: Math.floor((clientY - rect.top) / this.mapData.grid.size) * this.mapData.grid.size
+            x: Math.floor(x / this.mapData.grid.size) * this.mapData.grid.size,
+            y: Math.floor(y / this.mapData.grid.size) * this.mapData.grid.size
         };
     }
 

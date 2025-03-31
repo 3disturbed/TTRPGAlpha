@@ -51,6 +51,42 @@ class Game {
         
         // Token form submission
         this.setupTokenControls();
+        
+        // New Map dialog
+        const newMapBtn = document.getElementById('newMapBtn');
+        const newMapDialog = document.getElementById('newMapDialog');
+        const closeNewMapBtn = document.getElementById('closeNewMap');
+        const newMapForm = document.getElementById('newMapForm');
+
+        newMapBtn.addEventListener('click', () => {
+            newMapDialog.style.display = 'flex';
+        });
+
+        closeNewMapBtn.addEventListener('click', () => {
+            newMapDialog.style.display = 'none';
+        });
+
+        newMapForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const width = parseInt(document.getElementById('mapWidth').value);
+            const height = parseInt(document.getElementById('mapHeight').value);
+            this.createNewMap(width, height);
+            newMapDialog.style.display = 'none';
+        });
+    }
+
+    createNewMap(width, height) {
+        // Clear existing map data
+        this.mapData = new MapData();
+        
+        // Resize canvas with new dimensions
+        this.canvasManager.resizeCanvas(width, height);
+        
+        // Save the new map state
+        this.saveToLocalStorage();
+        
+        // Render the new map
+        this.render();
     }
 
     handleCanvasClick(e) {
@@ -59,23 +95,54 @@ class Game {
         if (this.mapData.editMode) {
             switch(this.activeTool) {
                 case 'draw':
-                    this.addTerrain(pos.x, pos.y);
+                    const terrainType = document.getElementById('terrainType').value;
+                    // Check if there's existing terrain at this position
+                    const existingTerrainIndex = this.mapData.terrain.findIndex(t => 
+                        t.x === pos.x && t.y === pos.y
+                    );
+                    
+                    if (existingTerrainIndex !== -1) {
+                        // Update existing terrain
+                        this.mapData.terrain[existingTerrainIndex].type = terrainType;
+                    } else {
+                        // Add new terrain
+                        this.mapData.terrain.push({ 
+                            x: pos.x, 
+                            y: pos.y, 
+                            type: terrainType,
+                            gridSize: this.mapData.grid.size 
+                        });
+                    }
                     break;
                 case 'erase':
-                    this.eraseTerrain(pos.x, pos.y);
+                    this.mapData.terrain = this.mapData.terrain.filter(t => 
+                        t.x !== pos.x || t.y !== pos.y
+                    );
                     break;
                 case 'token':
-                    this.placeSelectedToken(pos.x, pos.y);
+                    const tokenSelect = document.getElementById('tokenSelect');
+                    if (tokenSelect.value) {
+                        // Check if position is occupied
+                        const isOccupied = this.mapData.tokens.some(t => 
+                            t.x === pos.x && t.y === pos.y
+                        );
+                        
+                        if (!isOccupied) {
+                            this.tokenManager.placeToken(tokenSelect.value, pos.x, pos.y);
+                        }
+                    }
                     break;
                 case 'fog':
                     this.toggleFog(pos.x, pos.y);
                     break;
             }
+            
+            // Save after each change
+            this.saveToLocalStorage();
+            this.render();
         } else {
             this.selectTokenAtPosition(pos.x, pos.y);
         }
-        
-        this.render();
     }
 
     handleCanvasDoubleClick(e) {
@@ -253,28 +320,6 @@ class Game {
             for (let y = 0; y < this.canvasManager.canvas.height; y += this.mapData.grid.size) {
                 this.mapData.fogOfWar.push({ x, y });
             }
-        }
-    }
-
-    addTerrain(x, y) {
-        const terrainType = document.getElementById('terrainType').value;
-        const existingIndex = this.mapData.terrain.findIndex(t => t.x === x && t.y === y);
-        
-        if (existingIndex !== -1) {
-            this.mapData.terrain.splice(existingIndex, 1);
-        }
-        
-        this.mapData.terrain.push({ x, y, type: terrainType });
-    }
-
-    eraseTerrain(x, y) {
-        this.mapData.terrain = this.mapData.terrain.filter(t => t.x !== x || t.y !== y);
-    }
-
-    placeSelectedToken(x, y) {
-        const tokenSelect = document.getElementById('tokenSelect');
-        if (tokenSelect.value) {
-            this.tokenManager.placeToken(tokenSelect.value, x, y);
         }
     }
 

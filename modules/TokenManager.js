@@ -37,16 +37,25 @@ export default class TokenManager {
         if (!tokenData) return false;
 
         const existingTokenIndex = this.mapData.tokens.findIndex(token => token.id === tokenId);
+        const tokenToPlace = {
+            ...tokenData,
+            x,
+            y,
+            gridSize: this.mapData.grid.size
+        };
         
         if (existingTokenIndex !== -1) {
-            this.mapData.tokens[existingTokenIndex].x = x;
-            this.mapData.tokens[existingTokenIndex].y = y;
+            // Update existing token position
+            this.mapData.tokens[existingTokenIndex] = tokenToPlace;
         } else {
-            this.mapData.tokens.push({
-                ...tokenData,
-                x,
-                y
-            });
+            // Add new token to the map
+            this.mapData.tokens.push(tokenToPlace);
+            
+            // Also update the token in the initiative list
+            const initiativeIndex = this.mapData.initiative.findIndex(t => t.id === tokenId);
+            if (initiativeIndex !== -1) {
+                this.mapData.initiative[initiativeIndex] = tokenToPlace;
+            }
         }
         
         return true;
